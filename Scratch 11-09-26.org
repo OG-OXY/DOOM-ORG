@@ -1,0 +1,27 @@
+:PROPERTIES:
+:EXPORT_FILE_NAME: Scratch 11-09-26
+:CATEGORY: Scratch
+:ID:       d6870f53-a553-443b-a81a-a3188b205adf
+:EXPORT_DATE: 11-09-26
+:EXPORT_TITLE: Scratch
+:END:
+* TODO Look Into Crane And Get Nushell Package With It
+** Crane is a Rust Package helper for nix
+
+* TODO Figure Out Where Nushell Looks For Files
+** Fixing Nushell Could All Of This Be Happening Because Nushell Isnt Reading Or Picking Up Anything In =/share=?
+*** Figure Out Why =y= Function (/yazi tmpdir function/) Isnt Working For Nushell
+ * There is a yazi.nu in /share but for some reason command doesnt exist?..
+ * Also function seems to have an accidental paste in the middle of it
+**** Fix =y= Function For Nushell
+ * Figure out how the real =y= yazi function is suppose to be written in =nushell= 
+
+*** Fix Atuin Not Saving Nushell History /it only saves fish shell right now/
+**** Look At =atuin-nushell-config.nu=
+
+*** Fix Starship Prompt in Nushell
+**** Look at Starships =.nu=
+**** Copy Starships =.nu= Into My Config.nu Through Home manager or Figure out Why Nushell isnt Picking up any =.nu= Files in My =/share= Directory
+***** Add Helix Modes To =starship.nu='s Binds And Commands So That It Works With Nushells Helix Mode
+
+* TODO Figure Out What The Difference Is Between =-= And =*= In Org Mode /they seem to both make bullet point lists/
