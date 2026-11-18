@@ -1,0 +1,10 @@
+* Tech & Linux                                           :elfeed:tech:
+** NixOS & Emacs                                         :nix:emacs:
+*** [[https://nixos.org/blog/announcements-rss.xml][NixOS Announcements]]
+*** [[https://planet.emacslife.com/atom.xml][Planet Emacslife]]
+** Reddit                                                :reddit:
+*** [[https://www.reddit.com/r/NixOS/.rss][r/NixOS]]
+*** [[https://www.reddit.com/r/emacs/.rss][r/emacs]]
+*** [[https://www.reddit.com/r/HelixEditor/.rss][r/HelixEditor]]
+** YouTube                                               :youtube:
+*** [[https://www.youtube.com/feeds/videos.xml?channel_id=UCld68syR8Wi-GY_n4CaoJGA][DistroTube]]
