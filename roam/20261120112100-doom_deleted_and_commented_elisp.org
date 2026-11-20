@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID:       e65b3c20-5ecd-427d-8c40-760f8ee687a8
+:END:
+#+title: Doom: Deleted And Commented Elisp
+#+filetags: :doom:elisp:commented:disabled:deleted:old:code:
+* While Debugging Eldoc Max Eval Depth Hits
+- Bad alphelia after! block to nix-mode was the cause
+#+begin_src elisp
+; (defvar my/in-lsp!-hook nil)
+
+; (after! nix-mode
+;   (advice-add 'lsp! :around
+;               (lambda (orig-fn &rest args)
+;                 (unless my/in-lsp!-hook
+;                   (let ((my/in-lsp!-hook t))
+;                     (apply orig-fn args))))
+;               '((name . my/guard-lsp!))))
+
+#+end_src
+
+* Old Org-Capture Templates
+#+begin_src elisp
+		  ;; Original Journal Capture Entry Function (mini-buffers)
+          ; ("j" "Journal" plain
+          ;  (function +my/org-journal-find-location)
+          ;  "** %(format-time-string org-journal-time-format)%^{Title}\n%i%?"
+          ;  :jump-to-captured t
+          ;  :immediate-finish nil)
+
+          ;; Default Notes Capture Entry
+          ; ("n" "Personal notes" entry
+          ;  (file+headline +org-capture-notes-file "Inbox")
+          ;  "* %u %?\n%i\n%a"
+          ;  :prepend t)
+
+#+end_src
+
+* Original Org-Journal Entry Template Function
+#+begin_src elisp
+; ;;;###autoload
+; (defun +my/org-journal-find-location ()
+;   "Open today's `org-journal' file in the background without switching windows."
+;   (require 'org-journal)
+;   (let* ((path (org-journal--get-entry-path))
+;          (buf (find-file-noselect path)))
+;     (set-buffer buf)
+;     (when (= (buffer-size) 0)
+;       (insert (format-time-string (concat "* " org-journal-date-format "\n"))))
+;     (unless (eq org-journal-file-type 'daily)
+;       (org-narrow-to-subtree))
+;     (goto-char (point-max))))
+
+#+end_src
+
+* Fish Bind Old Jol JJ Op Log Function
+#+begin_src shell
+#${pkgs.jujutsu}/bin/jj op log --no-graph --template 'if(!description.starts_with("snapshot working copy") && !description.starts_with("args: jj log"), id.short() ++ "\t" ++ user ++ "\t" ++ time.start().ago() ++ "\t" ++ description ++ "\n")' -n 100 | ${pkgs.fzf}/bin/fzf --delimiter="\t" --with-nth=2.. --preview '${pkgs.jujutsu}/bin/jj diff --git --at-op {1}' --preview-window=right:65%
+#+end_src
+
+*

@@ -1,0 +1,58 @@
+* Friday, 11/20/2026
+** 00:04 Debugging: Excessive Lisp Nesting
+- Trying to solve emacs hitting max lisp eval depth limit of 1600 error: (excessive lisp nesting)
+*** 00:38 Debugging eldoc in org-mode
+- Eldoc-Mode is the cause of the excessive lisp nesting error in org mode
+*** 01:05 Eval limit Hit: Could be nix-mode +lsp
+- The Cause of the eval limit hitting could be eldoc, nix-mode's +lsp module or lsp! function, or somehow my custom org journal capture function.
+*** 01:28 +lsp Causing eval depth limit hit?
+- I think that turning off the +lsp module for nix in the :lang section of doom init.el solved the max eval depth limit hitting from elisp functions recusively looping
+*** 01:45 Normal "add-to-list 'load-path" Works
+- Custom journal org capture function still operating when commenting out that complicated function and using:
+  (add-to-list 'load-path (expand-file-name "lisp" doom-user-dir))
+*** 01:48 Toggled on Debug on error in emacs manually
+Trying to get this excessive lisp nesting error window to pop so i can trace whats causing it
+*** 02:01 Nothing Online about this bug
+- Looked up eval depth limit hit and nothing online thats helpful at all for solving this fucking error.
+*** 02:36 Org journal Function Causing nesting error?
+- I think my function is causing this excessive lisp nesting error b.c
+  i commented out the +org-journal-capture-location line in my after! org block
+  and it seems that its not triggering now.
+*** 02:51 Still no progress...
+- Im trying to comment out a bunch of shit in my config.el to see
+  if that fixes anything, ive removed a nil set for which key and
+  ive commented out loading my journal function and setting the org
+  journal capture location in my after! org block to see if that stops
+  it.
+- What in the world is this eldoc thing and why is it causing elisp recursion
+  in org mode?
+*** 03:40 Maybe its fucking that alphealia thing that triggered this error?
+- I edited my after! aplhelia or the auto format on save thing in my config.el
+  this could be causing the loop related to nix lsp!
+- Not even sure what to believe anymore
+  - is it nix mode's +lsp?
+  - is it eldoc?
+  - is it eldoc interacting with org, or essentially org-mode causing it?
+*** 03:44 Maybe it was direnv?
+- Could it be because i have direnv hooks enabled system-wide and it was causing
+  the recursion for nix-mode? i dont even know why i have nix mode on, i write
+  code in helix anyways.. maybe i should turn other langs off in doom for now?
+*** 04:34 Debugging: =DONE= Finally solved the fucking excessive lisp nesting error!
+- It was an after! aplhelia block calling a non real function. make sure in the future
+  if i get excessive lisp nesting again to check all blocks related to major and minor
+  modes
+** 04:38 Home manager
+*** TODO Convert Nix Doom Emacs To Home Manager Module :nixos:doom:
+** 06:23 How to add Dir recursively to load path?
+- Trying to figure out a way to add a Directory to doom emacs
+  load path for custom el files.
+** 06:41 How should i handle org-agenda?
+- Should i add my org-journal directory to my agenda files list?
+- What should i do with inbox and todo?
+- could org jounral replace inbox?
+- What exactly is notes for and where does it fit into all this if i use org-roam?
+** 10:42 Test Entry
+- Just seeing if the functions edit works
+
+** 11:19 Testing Org Journal Capture Template And Functions
+- Seems to be working good!

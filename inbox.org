@@ -1,0 +1,20 @@
+* Doom Emacs Import-Tree
+  [2026-11-20 Fri 10:16]
+  #+begin_src elisp
+(let ((lisp-dir (expand-file-name "lisp" doom-user-dir)))
+  (when (file-directory-p lisp-dir)
+    (add-to-list 'load-path lisp-dir)
+    (dolist (dir (directory-files-recursively lisp-dir "" t #'file-directory-p))
+      (add-to-list 'load-path dir))))
+
+  #+end_src
+
+  #+begin_src elisp
+(let ((lisp-dir (expand-file-name "lisp" doom-user-dir)))
+  (when (file-directory-p lisp-dir)
+    (dolist (file (directory-files-recursively lisp-dir "\\.el\\'"))
+      (unless (string-prefix-p "." (file-name-nondirectory file))
+        (require (intern (file-name-base file)))))))
+  #+end_src
+* How should i Setup my org-journal/agenda TODO workflow?
+  [2026-11-20 Fri 08:49]

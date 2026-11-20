@@ -1,5 +1,30 @@
 * Inbox
-** [2026-10-26 Mon] 
-[[file:~/Notes/Org/Scratch 10-25-26.org::#should-i-change-the-o-for-my-delete-key][Should I change the =o= for my =Delete= key]]
-** [2026-10-26 Mon] 
-[[file:~/Notes/Org/Scratch 10-25-26.org::#org-mode-org-roam-core-features][Org-Mode & Org-Roam Core Features]]
+** [2026-11-19 Thu]
+*** Org Files And Directories
+1. Standalone Files in Main org-directory
+
+Keep only a few high-level hub/task files at the top level of org-directory:
+
+    inbox.org — quick capture landing zone (SPC X / org-capture) for unsorted tasks, ideas, and reminders you process later.
+
+    todo.org (or agenda.org) — active tasks, projects, and scheduled/deadlined items that feed org-agenda.
+
+    notes.org (optional) — small general reference/scratch notes that do not need their own folder or org-roam node.
+
+2. Dedicated Directories With Many Separate Files
+
+Use a folder of many files when entries accumulate over time or grow into separate topics:
+
+    journal/ — many daily or dated entry files managed by org-journal (%Y%m%d), keeping daily logs separate from task agendas.
+
+    roam/ — many interlinked atomic notes managed by org-roam (org-roam-directory), indexed by node IDs and backlinks rather than org-agenda-files.
+
+    projects/ or archive/ (optional) — separate files per project or completed/archived items once they leave your active todo.org.
+
+3. Standalone File Inside Its Own Directory
+
+Use a dedicated folder for a single standalone .org file when a tool or workflow expects a self-contained home or attachments alongside one main file:
+
+    elfeed/elfeed.org — your rmh-elfeed-org-files definition file in its own elfeed/ folder so feed definitions stay isolated from tasks and notes.
+
+    Any single-topic .org file that has local assets/attachments next to it (for example, builds/nixos-notes.org with its own local images/files).
