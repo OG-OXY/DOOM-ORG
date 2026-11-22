@@ -1,0 +1,153 @@
+:PROPERTIES:
+:ID:       9b8d0f94-d6c7-46c6-b613-90d583a5e10a
+:END:
+#+title: Jujutsu: Working with multiple bookmarks (branches)
+#+filetags: :Jujutsu:jj:jujutsu:commits:merge:git:rebase:branch:branches:commit:workflow:version:control:
+* Jujutsu (=jj=) Workflow & Reference Note
+:PROPERTIES:
+:CUSTOM_ID: jujutsu-jj-workflow--reference-note
+:END:
+** Core Concepts
+:PROPERTIES:
+:CUSTOM_ID: core-concepts
+:END:
+- *=@=* is your live working copy revision and automatically tracks your edits.
+
+- *Bookmarks* (=master=, =exp=) are named pointers to revisions, not moving branches.
+
+- *Immutable commits* cannot be rewritten by default (such as shared/remote history like =exp@origin= or protected heads).
+
+- *Operation log* (=jj op log=, =jj op undo=, =jj op restore=) tracks local =jj= operations so you can step back local graph changes, though it does not un-push commits already sent to a remote.
+
+** What Each Command Actually Does
+:PROPERTIES:
+:CUSTOM_ID: what-each-command-actually-does
+:END:
+- **=jj log= / =jj l**=: Shows the commit graph, revisions, parents/children, and bookmarks.
+
+- **=jj diff= / =jj diff -r <rev>**=: Shows file changes in =@= or a specific revision.
+
+- *=jj new <target>=*: Creates a new working copy =@= on top of =<target>=.
+
+- *=jj new <A> <B>=*: Creates a merge commit with both =<A>= and =<B>= as parents.
+
+- *=jj rebase -s <source> -d <dest>=*: Moves =<source>= and its descendants (=-s=) onto =<dest>= (=-d=) as their new parent. Fails if rewriting commits marked immutable.
+
+- *=jj restore --from <rev> --into @=*: Copies file contents/state from =<rev>= into =@= without rewriting =<rev>=, working even when =<rev>= is immutable.
+
+- *=jj squash --from <src> --into <dst>=*: Moves/folds file changes from =<src>= into =<dst>= (only works when the affected revisions are mutable).
+
+- *=jj split=*: Splits one revision into two stacked revisions.
+
+- *=jj describe -m "msg"=*: Sets or updates a revision's description (defaults to =@=).
+
+- *=jj bookmark set <name> -r <rev>=*: Points =<name>= at =<rev>=. Blocks moving sideways or backwards unless =--allow-backwards= is passed.
+
+- *=jj git push --bookmark <name>=*: Pushes a single named bookmark to the remote.
+
+- *=jj git push --all= (=jgp=)*: Pushes all tracked bookmarks at once.
+
+** Scenarios & Step-by-Step Workflows
+:PROPERTIES:
+:CUSTOM_ID: scenarios--step-by-step-workflows
+:END:
+*** Scenario 1: Single-Branch Edit, Seal, and Push (=master=)
+:PROPERTIES:
+:CUSTOM_ID: scenario-1-single-branch-edit-seal-and-push-master
+:END:
+1. Edit files freely in =@=.
+2. Seal and push using your workflow:
+
+#+begin_src shell
+jj describe -m "your summary"
+jj bookmark set master -r @
+jj git push --bookmark master
+#+end_src
+
+- /Verification:/ Run =jj log= and confirm =master= points to =@= with your message set.
+
+3. Open a fresh child working copy when ready for the next block of edits:
+
+#+begin_src shell
+jj new @
+#+end_src
+
+- /Verification:/ Run =jj log= and confirm =@= sits cleanly on top of your sealed =master= commit.
+
+*** Scenario 2: Switch to =exp= Without Pulling =master='s History
+:PROPERTIES:
+:CUSTOM_ID: scenario-2-switch-to-exp-without-pulling-masters-history
+:END:
+1. Start a new working copy directly on =exp=:
+
+#+begin_src shell
+jj new exp
+#+end_src
+
+- /Verification:/ Run =jj log= and confirm =@= has a single parent (=exp=) and does not include =master=.
+
+2. Edit files in =@=, then describe and move =exp= forward when ready:
+
+#+begin_src shell
+jj describe -m "exp change"
+jj bookmark set exp -r @
+#+end_src
+
+- /Verification:/ Run =jj log= and confirm =exp= points to =@=.
+
+*** Scenario 3: Inject Changes From Another Revision Into =@= (Safe With Immutable Commits)
+:PROPERTIES:
+:CUSTOM_ID: scenario-3-inject-changes-from-another-revision-into--safe-with-immutable-commits
+:END:
+Use this when you switched to =jj new exp= (or =jj new master=) and want file changes from another revision (such as a =master= commit) without rewriting immutable history:
+
+1. Ensure =@= is on the branch you want to update (for example =jj new exp= or =jj new master=).
+
+2. Copy file state from =<rev>= into =@=:
+
+#+begin_src shell
+jj restore --from <rev> --into @
+#+end_src
+
+- /Verification:/ Run =jj diff= to confirm the exact file changes from =<rev>= are now in =@=.
+
+3. [@3] Describe =@= and advance the target bookmark:
+
+#+begin_src shell
+jj describe -m "pulled changes from <rev>"
+jj bookmark set exp -r @
+#+end_src
+
+- /Verification:/ Run =jj log= and confirm the bookmark points to =@= on its own branch line.
+
+*** Scenario 4: Move a Mutable Commit or Stack Onto a New Parent
+:PROPERTIES:
+:CUSTOM_ID: scenario-4-move-a-mutable-commit-or-stack-onto-a-new-parent
+:END:
+Only use this when the target revisions are mutable (not blocked by immutability):
+
+1. Move =<source>= and its descendants onto =<dest>=:
+
+#+begin_src shell
+jj rebase -s <source> -d <dest>
+#+end_src
+
+- /Verification:/ Run =jj log= and confirm =<source>= now sits directly on top of =<dest>=.
+
+*** Scenario 5: Intentionally Create a Merge Commit
+:PROPERTIES:
+:CUSTOM_ID: scenario-5-intentionally-create-a-merge-commit
+:END:
+Only use this when you explicitly want one revision with two parents:
+
+1. Run =jj new master exp=.
+
+- /Verification:/ Run =jj log= and confirm =@= has parent lines coming from both =master= and =exp=.
+
+*** Scenario 6: Push Safety (=jgp= / =--all=) and Local Undo
+:PROPERTIES:
+:CUSTOM_ID: scenario-6-push-safety-jgp----all-and-local-undo
+:END:
+- *Why =jj git push --all= needs care:* Because it pushes every tracked bookmark, it can push an unfinished or experimental bookmark (=exp=) alongside =master=. Prefer =jj git push --bookmark master= (or =--bookmark exp=) when pushing a single branch deliberately.
+- *Undo local =jj= operations:* Run =jj op undo= to revert the last local operation, or inspect =jj op log= and run =jj op restore <op_id>=.
+- /Verification:/ Run =jj log= and confirm the local graph matches the state you want.

@@ -1,0 +1,274 @@
+:PROPERTIES:
+:ID:       1be8bcb5-3d9e-4dc3-a4c3-e00042653ae9
+:END:
+#+title: Nix: Deleted&Disabled&Commented
+#+filetags: :nix:files:commented:disabled:deleted:unused:code:.nix:old:
+* Home-Manager
+** home.nix
+*** xdg.configFile
+**** secretspec/config.toml
+#+begin_src nix
+"secretspec/config.toml".source = config.lib.file.mkOutOfStoreSymlink "/home/ty/NixOS/Config/Secretspec/config.toml";
+#+end_src
+
+* Doom Emacs
+** =nixosModules=
+*** doom.nix
+#+begin_src nix
+flake.nixosModules.doom = { pkgs, ... }:
+let
+  doom = pkgs.doomEmacs {
+    doomDir = ./doom.d;
+    doomLocalDir = "~/.local/share/doom";
+    emacs = pkgs.emacs-pgtk;
+    experimentalFetchTree = true;
+    extraPackages = epkgs:
+    let
+      fpkgs = pname: src: packageRequires: epkgs.melpaBuild {
+        inherit pname src packageRequires;
+        version = "1.0.0";
+      };
+    in
+    [
+      epkgs.treesit-grammars.with-all-grammars
+      (fpkgs "helix" inputs.helix-mode [ ])
+      (fpkgs "image-roll" inputs.image-roll [ ])
+      (fpkgs "majutsu" inputs.majutsu [
+        epkgs.magit
+        epkgs.consult
+        epkgs.plz
+        epkgs.transient
+      ])
+    ];
+  };
+in
+{
+  environment.systemPackages = [ doom ];
+  systemd.user.services.doom = {
+    description = "Doom Emacs Daemon";
+    documentation = [ "info:emacs" "man:emacs(1)" "https://gnu.org/software/emacs/" ];
+    wantedBy = [ "default.target" ];
+    after = [ "graphical-session.target" ];
+    serviceConfig = {
+      Type = "simple";
+      ExecStart = "${doom}/bin/doom-emacs --fg-daemon=doom";
+      ExecStop = "${pkgs.emacs-pgtk}/bin/emacsclient -s doom -e '(kill-emacs)'";
+      Restart = "on-failure";
+      SuccessExitStatus = 15;
+    };
+  };
+};
+#+end_src
+*** Evil Stripped Attempt =fpkg=
+#+begin_src nix
+(fpkgs "evil" (pkgs.lib.cleanSourceWith {
+  src = inputs.evil-stripped;
+  filter = path: type:
+    let base = baseNameOf path;
+    in !(builtins.match ".*test.*" base != null || base == "evil-tests.el");
+}) [ epkgs.goto-chg ])
+#+end_src
+** =homeModules=
+*** doom.nix
+#+begin_src nix
+# doom.nix
+{
+ inputs,
+  ...
+}:
+{
+  flake.homeModules.doom = { pkgs, config, ... }:
+  let
+    cfg = config.programs.doom-emacs;
+    localDir = "${config.xdg.dataHome}/doom";
+  in
+  {
+    programs.doom-emacs = {
+      enable = true;
+      doomDir = ./doom.d;
+      doomLocalDir = localDir;
+      emacs = pkgs.emacs-pgtk;
+      provideEmacs = false;
+      experimentalFetchTree = true;
+      extraPackages = epkgs: let
+        fpkg = pkgs.mkFpkg epkgs;
+      in
+      [
+        epkgs.treesit-grammars.with-all-grammars
+        (fpkg "helix" inputs.helix-mode [ ])
+        (fpkg "image-roll" inputs.image-roll [ ])
+        (fpkg "majutsu" inputs.majutsu [ epkgs.magit epkgs.consult epkgs.plz epkgs.transient ])
+      ];
+    };
+    systemd.user.services.doom = {
+      Unit = {
+        Description = "Doom Emacs Daemon";
+        After = [ "graphical-session.target" ];
+      };
+      Service = {
+        Type = "simple";
+        ExecStart = "${cfg.finalDoomPackage}/bin/doom-emacs --fg-daemon=doom";
+        ExecStop = "${pkgs.emacs-pgtk}/bin/emacsclient -s doom --eval '(kill-emacs)'";
+        Restart = "on-failure";
+      };
+      Install = {
+        WantedBy = [ "default.target" ];
+      };
+    };
+    xdg.desktopEntries.doom = {
+      name = "Doom Emacs";
+      genericName = "Text Editor";
+      comment = "Edit text and code with Doom Emacs";
+      exec = "${pkgs.emacs-pgtk}/bin/emacsclient -s doom -c -n -a \"${cfg.finalDoomPackage}/bin/doom-emacs --fg-daemon=doom\" %F";
+      icon = "emacs";
+      terminal = false;
+      categories = [ "TextEditor" "Development" ];
+      mimeType = [ "text/english" "text/plain" "text/x-makefile" "text/x-c++hdr" "text/x-c++src" "text/x-chdr" "text/x-csrc" "text/x-java" "text/x-moc" "text/x-pascal" "text/x-tcl" "text/x-tex" "application/x-shellscript" "text/x-c" "text/x-c++" ];
+      startupNotify = true;
+    };
+  };
+}
+# Extra Configurations + Disabled, Changed
+# tangleArgs = "--all config.org";
+
+#+end_src
+* Emacs-PGTK
+** =nixosModules=
+*** emacs.nix
+#+begin_src nix
+{
+  ...
+}:
+{
+  flake.nixosModules.emacs = { pkgs, ... }:
+  let
+    emacs = (pkgs.emacsPackagesFor pkgs.emacs-pgtk).emacsWithPackages (epkgs:
+    let
+      fpkgs = pname: src: packageRequires: epkgs.melpaBuild {
+        inherit pname src packageRequires;
+        version = "1.0.0";
+      };
+    in
+    [
+      epkgs.use-package
+      epkgs.no-littering
+      epkgs.doom-themes
+      epkgs.doom-modeline
+      epkgs.dashboard
+      epkgs.nerd-icons
+      epkgs.helix
+      epkgs.which-key
+      epkgs.vertico
+      epkgs.marginalia
+      epkgs.consult
+      epkgs.perspective
+      epkgs.projectile
+      epkgs.orderless
+      epkgs.corfu
+      epkgs.org-roam
+      epkgs.org-appear
+      epkgs.org-modern
+      epkgs.org-superstar
+      epkgs.sqlite3
+      epkgs.emacsql
+      epkgs.forge
+      epkgs.pandoc-mode
+      epkgs.undo-fu-session
+      epkgs.helpful
+      epkgs.treesit-grammars.with-all-grammars
+      (fpkgs "helix" inputs.helix-mode [ ])
+      (fpkgs "image-roll" inputs.image-roll [ ])
+      (fpkgs "majutsu" inputs.majutsu [ epkgs.magit epkgs.consult epkgs.plz epkgs.transient ])
+    ]);
+  in
+  {
+    environment = {
+      systemPackages = [ emacs ];
+      pathsToLink = [ "/share/applications" "/share" "/share/emacs" ];
+    };
+    # Launch the isolated tinkering service
+    systemd.user.services.emacs-pgtk = {
+      description = "Emacs PGTK Daemon";
+      documentation = [ "info:emacs" "man:emacs(1)" "https://gnu.org/software/emacs/" ];
+      wantedBy = [ "default.target" ];
+      after = [ "graphical-session.target" ];
+      serviceConfig = {
+        Type = "simple";
+        ExecStart = "${emacs}/bin/emacs --init-directory=%h/NixOS/Modules/Features/emacs/emacs.d --fg-daemon=emacs";
+        ExecStop = "${emacs}/bin/emacsclient -s emacs -e '(kill-emacs)'";
+        Restart = "on-failure";
+        SuccessExitStatus = 15;
+      };
+    };
+  };
+}
+#+end_src
+** =homeModules=
+*** emacs.nix
+#+begin_src nix
+# emacs.nix
+{
+  inputs,
+  ...
+}:
+{
+  flake.homeModules.emacs = { pkgs, config, ... }:
+  let
+    cfg = config.programs.emacs;
+    HOME = config.home.homeDirectory;
+  in
+  {
+    programs.emacs = {
+      enable = true;
+      package = pkgs.emacs-pgtk;
+      extraPackages = epkgs: let
+        fpkg = pkgs.mkFpkg epkgs;
+      in
+      [
+        epkgs.use-package
+        epkgs.no-littering
+        epkgs.doom-themes
+        epkgs.doom-modeline
+        epkgs.dashboard
+        epkgs.nerd-icons
+        epkgs.which-key
+        epkgs.vertico
+        epkgs.marginalia
+        epkgs.consult
+        epkgs.perspective
+        epkgs.projectile
+        epkgs.orderless
+        epkgs.corfu
+        epkgs.org-roam
+        epkgs.org-appear
+        epkgs.org-modern
+        epkgs.org-superstar
+        epkgs.sqlite3
+        epkgs.emacsql
+        epkgs.forge
+        epkgs.pandoc-mode
+        epkgs.undo-fu-session
+        epkgs.helpful
+        epkgs.treesit-grammars.with-all-grammars
+        (fpkg "helix" inputs.helix-mode [ ])
+        (fpkg "image-roll" inputs.image-roll [ ])
+        (fpkg "majutsu" inputs.majutsu [
+          epkgs.magit
+          epkgs.consult
+          epkgs.plz
+          epkgs.transient
+        ])
+      ];
+    };
+    services.emacs = {
+      enable = true;
+      package = cfg.finalPackage;
+      client.enable = true;
+      startWithUserSession = true;
+      extraOptions = [
+        "--init-directory=${HOME}/NixOS/Modules/Features/emacs/emacs.d"
+      ];
+    };
+  };
+}
+#+end_src

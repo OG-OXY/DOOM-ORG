@@ -41,8 +41,6 @@ Trying to get this excessive lisp nesting error window to pop so i can trace wha
 - It was an after! aplhelia block calling a non real function. make sure in the future
   if i get excessive lisp nesting again to check all blocks related to major and minor
   modes
-** 04:38 Home manager
-*** TODO Convert Nix Doom Emacs To Home Manager Module :nixos:doom:
 ** 06:23 How to add Dir recursively to load path?
 - Trying to figure out a way to add a Directory to doom emacs
   load path for custom el files.

@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID:       40b75bdb-7504-454c-9958-d659472b0d0c
+:END:
+#+title: Staying Within Buffer - Org Capturing
+
+*  The Problem:
+Two things are causing that 3-window mess: =(org-journal-new-entry t)= calls =switch-to-buffer= (ripping your current window straight to the journal file before =org-capture= even opens its popup), and =:jump-to-captured t= tells =org-capture= to jump to the journal file window instead of staying in your current buffer when you hit =C-c C-c=.
+
+- /WHY IT RIPS YOU AWAY:/ =org-journal-new-entry= displays the journal buffer interactively in your active window, and then =org-capture= splits another popup window on top of it, plus =:jump-to-captured t= keeps you in the journal file after finishing instead of returning you to where you started.
+- /HOW TO FIX IT CLEANLY:/ Resolve today's journal file path with =(org-journal--get-entry-path)= inside =with-current-buffer (find-file-noselect ...)= (so Emacs opens/creates the journal file silently in the background without touching your visible windows), ensure the daily date header exists if the file is brand new, and set =:jump-to-captured nil= in your ="j"= capture template.
+
+* The Fix:
+
+*** 1. Update =+my/org-journal-find-location= in =lisp/org/my-org-functions.el=
+:PROPERTIES:
+:CUSTOM_ID: 1-update-myorg-journal-find-location-in-lisporgmy-org-functionsel
+:END:
+Replace =+my/org-journal-find-location= with this silent background version that never switches your active window:
+
+#+begin_src elisp
+;;; lisp/org/my-org-functions.el -*- lexical-binding: t; -*-
+;;; Commentary:
+;; Functions For Org Mode
+
+;;;###autoload
+(defun +my/org-journal-find-location ()
+  "Open today's `org-journal' file in the background without switching windows."
+  (require 'org-journal)
+  (let* ((path (org-journal--get-entry-path))
+         (buf (find-file-noselect path)))
+    (set-buffer buf)
+    (when (= (buffer-size) 0)
+      (insert (format-time-string (concat "* " org-journal-date-format "\n"))))
+    (unless (eq org-journal-file-type 'daily)
+      (org-narrow-to-subtree))
+    (goto-char (point-max))))
+
+(provide 'my-org-functions)
+#+end_src
+
+*** 2. Set =:jump-to-captured nil= in =lisp/org/my-org-templates.el=
+:PROPERTIES:
+:CUSTOM_ID: 2-set-jump-to-captured-nil-in-lisporgmy-org-templatesel
+:END:
+Update your ="j"= template in =lisp/org/my-org-templates.el= so =C-c C-c= closes the capture popup and leaves you right in your original buffer:
+
+#+begin_src elisp
+          ("j" "Journal" plain
+           (function +my/org-journal-find-location)
+           "** %(format-time-string org-journal-time-format)%^{Title}\n%i%?"
+           :jump-to-captured nil
+           :immediate-finish nil)
+#+end_src
+
+*** 3. Rebuild/Switch and Verify
+:PROPERTIES:
+:CUSTOM_ID: 3-rebuildswitch-and-verify
+:END:
+1. Save both =.el= files, run your NixOS switch (=nixos-rebuild switch= or =nh os switch=), and restart =doom.service= from Fish:
+
+#+begin_src fish
+systemctl --user restart doom.service
+#+end_src
+
+- /Verification:/ =systemctl --user is-active doom.service= prints =active=.
+
+2. [@2] Trigger =org-capture= -> =j= from any buffer:
+
+- /Verification:/ Only one title prompt opens, followed by one capture popup over your current buffer, and pressing =C-c C-c= files the entry and returns you straight to your original buffer with no extra windows left open. #+end_src

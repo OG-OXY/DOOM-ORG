@@ -3,63 +3,45 @@
 :END:
 #+title: Doom Emacs Import-Tree
 #+filetags: :doom:emacs:import-tree:functions:elisp:lisp:directories:recursive:
-#+begin_src markdown
-Two things are causing that 3-window mess: `(org-journal-new-entry t)` calls `switch-to-buffer` (ripping your current window straight to the journal file before `org-capture` even opens its popup), and `:jump-to-captured t` tells `org-capture` to jump to the journal file window instead of staying in your current buffer when you hit `C-c C-c`.
 
-* *WHY IT RIPS YOU AWAY:* `org-journal-new-entry` displays the journal buffer interactively in your active window, and then `org-capture` splits another popup window on top of it, plus `:jump-to-captured t` keeps you in the journal file after finishing instead of returning you to where you started.
-* *HOW TO FIX IT CLEANLY:* Resolve today's journal file path with `(org-journal--get-entry-path)` inside `with-current-buffer (find-file-noselect ...)` (so Emacs opens/creates the journal file silently in the background without touching your visible windows), ensure the daily date header exists if the file is brand new, and set `:jump-to-captured nil` in your `"j"` capture template.
+* Explanation:
+No---Emacs has no built-in =(require-directory ...)= function because =require= maps a single feature symbol (='foo=) to a single file (=foo.el=).
 
-### 1. Update `+my/org-journal-find-location` in `lisp/org/my-org-functions.el`
+- /WHY =require= IS SINGLE-FILE:/ =require= checks the =features= list for a symbol provided by =(provide 'foo)= and loads the matching =.el= file from =load-path=.
+- /WHAT YOU CAN DO INSTEAD:/ Loop over =directory-files= (or =directory-files-recursively=) and call =require= on the =intern=ed filename base of each =.el= file, or use Doom's =load!= across the file list.
+- /WHAT TO WATCH OUT FOR:/ Every =.el= file in that folder must end with a matching =(provide 'filename-without-extension)= line, otherwise =require= will throw an error saying the feature was not provided.
 
-Replace `+my/org-journal-find-location` with this silent background version that never switches your active window:
+* Solution:
+*** Step-by-Step Guide to Requiring a Whole Directory
+:PROPERTIES:
+:CUSTOM_ID: step-by-step-guide-to-requiring-a-whole-directory
+:END:
+1. Add your directory (and subdirectories, if any) to =load-path= in =config.el=:
 
-```elisp
-;;; lisp/org/my-org-functions.el -*- lexical-binding: t; -*-
-;;; Commentary:
-;; Functions For Org Mode
-
-;;;###autoload
-(defun +my/org-journal-find-location ()
-  "Open today's `org-journal' file in the background without switching windows."
-  (require 'org-journal)
-  (let* ((path (org-journal--get-entry-path))
-         (buf (find-file-noselect path)))
-    (set-buffer buf)
-    (when (= (buffer-size) 0)
-      (insert (format-time-string (concat "* " org-journal-date-format "\n"))))
-    (unless (eq org-journal-file-type 'daily)
-      (org-narrow-to-subtree))
-    (goto-char (point-max))))
-
-(provide 'my-org-functions)
-
-```
-
-### 2. Set `:jump-to-captured nil` in `lisp/org/my-org-templates.el`
-
-Update your `"j"` template in `lisp/org/my-org-templates.el` so `C-c C-c` closes the capture popup and leaves you right in your original buffer:
-
-```elisp
-          ("j" "Journal" plain
-           (function +my/org-journal-find-location)
-           "** %(format-time-string org-journal-time-format)%^{Title}\n%i%?"
-           :jump-to-captured nil
-           :immediate-finish nil)
-
-```
-
-### 3. Rebuild/Switch and Verify
-
-1. Save both `.el` files, run your NixOS switch (`nixos-rebuild switch` or `nh os switch`), and restart `doom.service` from Fish:
-```fish
-systemctl --user restart doom.service
-
-```
-
-
-* *Verification:* `systemctl --user is-active doom.service` prints `active`.
-
-
-2. Trigger `org-capture` -> `j` from any buffer:
-* *Verification:* Only one title prompt opens, followed by one capture popup over your current buffer, and pressing `C-c C-c` files the entry and returns you straight to your original buffer with no extra windows left open.
+#+begin_src elisp
+(let ((lisp-dir (expand-file-name "lisp" doom-user-dir)))
+  (when (file-directory-p lisp-dir)
+    (add-to-list 'load-path lisp-dir)
+    (dolist (dir (directory-files-recursively lisp-dir "" t #'file-directory-p))
+      (add-to-list 'load-path dir))))
 #+end_src
+
+2. [@2] Loop over all =.el= files in that directory tree and =require= each one by its base filename:
+
+#+begin_src elisp
+(let ((lisp-dir (expand-file-name "lisp" doom-user-dir)))
+  (when (file-directory-p lisp-dir)
+    (dolist (file (directory-files-recursively lisp-dir "\\.el\\'"))
+      (unless (string-prefix-p "." (file-name-nondirectory file))
+        (require (intern (file-name-base file)))))))
+#+end_src
+
+3. [@3] Ensure every =.el= file inside =lisp/= ends with =(provide '<exact-filename-without-el>)= (for example, =my-org-templates.el= ends with =(provide 'my-org-templates)=).
+4. Rebuild/switch NixOS and restart =doom.service= from Fish, then verify all features loaded:
+
+#+begin_src fish
+systemctl --user restart doom.service
+emacsclient --socket-name=doom -e '(list (featurep (quote my-org-functions)) (featurep (quote my-org-templates)))'
+#+end_src
+
+- /Verification:/ Fish prints =(t t)= and =systemctl --user is-active doom.service= prints =active=.

@@ -17,7 +17,6 @@
 ;               '((name . my/guard-lsp!))))
 
 #+end_src
-
 * Old Org-Capture Templates
 #+begin_src elisp
 		  ;; Original Journal Capture Entry Function (mini-buffers)

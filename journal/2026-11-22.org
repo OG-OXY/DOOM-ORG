@@ -1,0 +1,16 @@
+* Sunday, 11/22/2026
+** 04:38 Home manager
+*** TODO Convert Nix Doom Emacs To Home Manager Module :nixos:doom:
+
+
+** 14:27 JJ Version Control Experiment, And Running Two Branches One Repo
+- Learning slowly but steadily to grapple this jj thing, it seems that these are the things to pay attention to.
+- Is a commit blue? IS IT IMMUTABLE
+- If its immutable rebase or restore to a mutable copy and simply point the wanted branch or bookmark at the mutable copy
+  that those changes or that diff has added to.
+- If you want to change the state of your files on disk to a branches pushed copy, run jj new to start a new mutable copy
+  of the immutable commits changes.
+- If you want to re-merge changes to both branches match all the work the current disk state is at or your local copys @
+  then just run jj new master exp, and point both bookmarks to @ and then push all.
+- If theirs changes your not sure of or done with you can restore, rebase or squash a certain diff or working copies diff history onto any mutable commit,
+  you then can set the bookmark you want the changes applied to, to that copy, and push.
