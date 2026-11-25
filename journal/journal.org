@@ -1,6 +1,2 @@
 
 * 2026
-** 2026-11 November
-*** 2026-11-19 Thursday
-*** 2026-11-20 Friday
-**** [2026-11-20 Fri 02:19] Testing wether or not regular or capture journal triggers this fucking eval bug

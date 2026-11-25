@@ -1,0 +1,14 @@
+* Monday, 11/23/2026
+** 06:44 org function and flymake backend (org-lint)
+- made a new org mode function in my-org-functions.el to auto start or hook
+  in a backend for flymake to run so that org gets
+  diagnostics and org lint automatically runs in the background.
+** 06:54 Trying to decide if i should keep using this or use org daily.. i should probably use daily with a good template
+*** TODO Decide wether to use this and regular org journal or roam daily
+**** TODO Figure out what to do with roam daily and journal regardless
+- Maybe daily can replace my monolith scratch node and where i paste sources and guides and dump real notes or info.
+- I could use journal to keep track of what im doing and use as a throw away task tracker and general agenda TODO tool.
+- Ya maybe going full org roam might be the best? that way everythings tracked and i can always use org roam refile, and i can just
+  use the same creation template that journal uses, since thats basically the only thing this provides over dailies, but creating
+  a custom org roam daily journal capture template would give all the benefits ids and second brain of org roam,
+  with the same high level and detailed tracking og what i did and said when and a place to pop todos in randomly.

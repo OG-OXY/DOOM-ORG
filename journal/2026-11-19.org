@@ -1,3 +1,0 @@
-* Thursday, 11/19/2026
-** 23:57 Testing Journal Function
-- Ran my J key in org capture and trying to get Excessive lisp nesting error to pop the debugger while in org

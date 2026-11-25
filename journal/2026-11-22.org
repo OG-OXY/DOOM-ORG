@@ -1,8 +1,4 @@
 * Sunday, 11/22/2026
-** 04:38 Home manager
-*** TODO Convert Nix Doom Emacs To Home Manager Module :nixos:doom:
-
-
 ** 14:27 JJ Version Control Experiment, And Running Two Branches One Repo
 - Learning slowly but steadily to grapple this jj thing, it seems that these are the things to pay attention to.
 - Is a commit blue? IS IT IMMUTABLE
@@ -14,3 +10,10 @@
   then just run jj new master exp, and point both bookmarks to @ and then push all.
 - If theirs changes your not sure of or done with you can restore, rebase or squash a certain diff or working copies diff history onto any mutable commit,
   you then can set the bookmark you want the changes applied to, to that copy, and push.
+
+** 22:42 JJ Update:
+- Wow so i guess i can push something if i use --bookmark name even if my working copy isn't @ it,
+- Ran jj duplicate, set the bookmark to the revision with the changes, ran jj git push  --bookmark exp, then did jj new exp, which reflected its changes on disk
+  and made the commit i duplicated masters changes to the parent working copy of =@= and my =@-= diff now shows the changes i wanted included in exp.
+- I think next time i can just run jj abandon to abandon my working copy. and then bookmark set and push normally, i had the trouble of the diff i wanted
+  merged into exp a copy ahead of @ so i point exp bookmark at it but @ wasn't the one with changes so it wouldn't let me push.
